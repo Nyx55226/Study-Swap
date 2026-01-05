@@ -1,0 +1,116 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../pages/content/tutoring_detail_page.dart';
+import '../providers/user_provider.dart';
+import 'package:studyswap/services/traslation_manager.dart';
+class TutoringTile extends ConsumerWidget {
+  final String title;
+  final List<bool> isYearSelected;
+  final String description;
+  final String userId;
+  final String tutoringId;
+  final num hours;
+  final String contactHandle;
+  final String contactPlatform;
+  final String mode;
+
+  const TutoringTile( {
+    super.key,
+    required this.title,
+    required this.isYearSelected,
+    required this.description,
+    required this.userId,
+    required this.tutoringId,
+    required this.hours,
+    required this.mode,
+    required this.contactHandle,
+    required this.contactPlatform
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final List<String> ordinalYears = ['1st', '2nd', '3rd', '4th', '5th'];
+    final currentUser = ref.watch(userProvider).value;
+    final isOfUser = currentUser != null && currentUser.uid == userId;
+
+    Widget buildYearChips() {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(Translation.of(context)!.translate("Tutoring.yearT")),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: List.generate(5, (index) {
+                final isSelected = isYearSelected[index];
+                final yearText = ordinalYears[index];
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected ? theme.colorScheme.secondary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    yearText,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? theme.colorScheme.surface
+                          : theme.textTheme.bodyMedium?.color?.withAlpha(153), // ~60%
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TutoringDetailPage(
+              subject: (Translation.of(context)!.translate("subjectsList.$title")),
+              description: description,
+              classes: isYearSelected,
+              userId: userId,
+              isOfUser: isOfUser,
+              tutoringId: tutoringId,
+              hours: hours,
+              mode: mode,
+              contactHandle: contactHandle,
+              contactPlatform: contactPlatform,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              (Translation.of(context)!.translate("subjectsList.$title")),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
+            buildYearChips(),
+          ],
+        ),
+      ),
+    );
+  }
+}
